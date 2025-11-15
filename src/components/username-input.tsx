@@ -15,7 +15,7 @@ interface UsernameInputProps {
   placeholder?: string
 }
 
-export default function UsernameInput({
+export function UsernameInput({
   username,
   onUsernameChange,
   onSearch,
@@ -67,7 +67,7 @@ export default function UsernameInput({
           </div>
           {showSignInHint && username.trim() && (
             <p className="text-xs text-gray-500 mt-2 text-center">
-              You'll be signed in and then @{username}'s profile will be analyzed
+              You&apos;ll be signed in and then @{username}&apos;s profile will be analyzed
             </p>
           )}
         </CardContent>

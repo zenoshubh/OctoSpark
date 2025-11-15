@@ -1,12 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Loader2,
   Github,
   Star,
   GitFork,
@@ -18,7 +17,7 @@ import {
   PieChart,
   ChevronRight,
   Zap,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -26,12 +25,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogClose,
-} from "@/components/ui/dialog";
-import UsernameInput from "@/components/UsernameInput";
-import FeatureSection from "./FeatureSection";
-import { signIn, useSession } from "next-auth/react";
-import Link from "next/link";
-import ScoreCalculationInfo from "./ScoreCalculationInfo";
+} from '@/components/ui/dialog';
+import { UsernameInput } from '@/components/username-input';
+import { FeatureSection } from '@/components/feature-section';
+import { signIn, useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { ScoreCalculationInfo } from '@/components/score-calculation-info';
+import { fetchCalculateScore } from '@/fetchers/calculate-score';
 
 interface ScoreData {
   username: string;
@@ -42,12 +42,12 @@ interface ScoreData {
     category: string;
     score: number;
     maxScore: number;
-    details: Record<string, any>;
+    details: Record<string, unknown>;
   }>;
   profileData: {
-    name: string;
-    bio: string;
-    location: string;
+    name: string | null;
+    bio: string | null;
+    location: string | null;
     avatarUrl: string;
     followers: number;
     following: number;
@@ -137,18 +137,18 @@ const CircleProgress = ({
   );
 };
 
-export default function GitHubScoreCalculator() {
-  const { data: session, status } = useSession();
+export function GitHubScoreCalculator() {
+  const { data: session } = useSession();
 
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<{
     category: string;
     score: number;
     maxScore: number;
-    details: Record<string, any>;
+    details: Record<string, unknown>;
   } | null>(null);
 
   // Listen for auto-analyze events from parent component
@@ -156,7 +156,7 @@ export default function GitHubScoreCalculator() {
     const handleAutoAnalyze = (event: CustomEvent) => {
       const { username: autoUsername } = event.detail;
       if (autoUsername) {
-        console.log("Auto-analyzing username:", autoUsername);
+        // Auto-analyzing username
         setUsername(autoUsername);
         // Small delay to ensure state is set
         setTimeout(() => {
@@ -165,17 +165,17 @@ export default function GitHubScoreCalculator() {
       }
     };
 
-    window.addEventListener("autoAnalyze", handleAutoAnalyze as EventListener);
+    window.addEventListener('autoAnalyze', handleAutoAnalyze as EventListener);
 
     // Also check localStorage on component mount as additional fallback
     const checkStoredUsername = () => {
       const stored =
-        localStorage.getItem("pendingUsername") ||
-        sessionStorage.getItem("pendingUsername");
+        localStorage.getItem('pendingUsername') ||
+        sessionStorage.getItem('pendingUsername');
       if (stored) {
-        console.log("Found stored username:", stored);
-        localStorage.removeItem("pendingUsername");
-        sessionStorage.removeItem("pendingUsername");
+        // Found stored username
+        localStorage.removeItem('pendingUsername');
+        sessionStorage.removeItem('pendingUsername');
         setUsername(stored);
         setTimeout(() => {
           calculateScoreForUsername(stored);
@@ -188,38 +188,31 @@ export default function GitHubScoreCalculator() {
 
     return () => {
       window.removeEventListener(
-        "autoAnalyze",
+        'autoAnalyze',
         handleAutoAnalyze as EventListener
       );
     };
   }, []);
 
-  const calculateScore = async () => {
-    await calculateScoreForUsername(username.trim());
-  };
-
   const calculateScoreForUsername = async (targetUsername: string) => {
     if (!targetUsername.trim()) return;
 
     setLoading(true);
-    setError("");
+    setError('');
     setScoreData(null);
 
     try {
-      const response = await fetch(
-        `/api/calculate-score?targetUsername=${encodeURIComponent(
-          targetUsername
-        )}`
-      );
-      const result = await response.json();
+      const result = await fetchCalculateScore(targetUsername);
 
-      if (result.success) {
+      if (result.error) {
+        setError(result.error);
+      } else if (result.data) {
         setScoreData(result.data);
       } else {
-        setError(result.message || "Failed to calculate score");
+        setError('Failed to calculate score');
       }
-    } catch (err) {
-      setError("An error occurred while calculating the score");
+    } catch {
+      setError('An error occurred while calculating the score');
     } finally {
       setLoading(false);
     }
@@ -229,17 +222,17 @@ export default function GitHubScoreCalculator() {
     setLoading(true);
     if (username.trim()) {
       // Save username to session storage and localStorage as backup
-      sessionStorage.setItem("pendingUsername", username.trim());
-      localStorage.setItem("pendingUsername", username.trim());
+      sessionStorage.setItem('pendingUsername', username.trim());
+      localStorage.setItem('pendingUsername', username.trim());
 
       // Include username in callback URL and redirect directly
       const callbackUrl = `${
         window.location.origin
       }?username=${encodeURIComponent(username.trim())}`;
-      await signIn("github", { callbackUrl });
+      await signIn('github', { callbackUrl });
     } else {
       // Regular sign-in without username
-      await signIn("github", { callbackUrl: window.location.origin });
+      await signIn('github', { callbackUrl: window.location.origin });
     }
   };
 
@@ -252,7 +245,7 @@ export default function GitHubScoreCalculator() {
     if (session && username.trim()) {
       calculateScoreForUsername(username.trim());
     } else {
-      setError("Please enter a valid GitHub username");
+      setError('Please enter a valid GitHub username');
     }
   };
 
@@ -272,7 +265,7 @@ export default function GitHubScoreCalculator() {
           {error && (
             <Card className="max-w-md mx-auto bg-gray-900/50 backdrop-blur-xl border-red-800/20">
               <CardContent >
-                <div className="flex items-center py-2 space-x-3 text-red-400">
+                <div className="flex items-center py-2 gap-3 text-red-400">
                   <div className="w-6 h-6 bg-red-500/20 rounded-full flex items-center justify-center">
                     <span className="text-sm">!</span>
                   </div>
@@ -280,7 +273,7 @@ export default function GitHubScoreCalculator() {
                 </div>
                 <Button
                   className="w-full bg-gray-800 hover:bg-gray-700 text-white"
-                  onClick={() => setError("")}
+                  onClick={() => setError('')}
                 >
                   Try Again
                 </Button>
@@ -299,7 +292,7 @@ export default function GitHubScoreCalculator() {
             <div className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
           <p className="mt-6 text-lg text-gray-300">
-            Analyzing @{username}'s profile...
+            Analyzing @{username}&apos;s profile...
           </p>
         </div>
       )}
@@ -314,7 +307,7 @@ export default function GitHubScoreCalculator() {
               className="border-gray-700 bg-purple-400/5 text-gray-300 hover:bg-purple-400/30"
               onClick={() => {
                 setScoreData(null);
-                setUsername("");
+                setUsername('');
               }}
             >
               New Analysis
@@ -327,7 +320,7 @@ export default function GitHubScoreCalculator() {
               <div className="flex flex-col lg:flex-row items-center gap-8">
                 {/* Profile Information */}
                 <div className="flex-1 space-y-4">
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center gap-4">
                     <Avatar className="w-20 h-20 ring-4 ring-purple-500/20">
                       <AvatarImage src={scoreData.profileData.avatarUrl} />
                       <AvatarFallback className="text-2xl bg-gradient-to-br from-purple-500 to-blue-500 text-white">
@@ -338,7 +331,7 @@ export default function GitHubScoreCalculator() {
                       <h2 className="text-2xl font-bold text-white">
                         {scoreData.profileData.name || scoreData.username}
                       </h2>
-                      <div className="flex items-center space-x-3 text-gray-400 hover:text-purple-400">
+                      <div className="flex items-center gap-3 text-gray-400 hover:text-purple-400">
                         <Link
                           href={`https://github.com/${scoreData.username}`}
                           target="_blank"
@@ -364,7 +357,7 @@ export default function GitHubScoreCalculator() {
                       <span>{scoreData.profileData.location}</span>
                     </div>
                   )}
-                  <div className="flex items-center space-x-4 mt-1">
+                  <div className="flex items-center gap-4 mt-1">
                     <div className="flex items-center text-gray-400">
                       <Users className="w-4 h-4 mr-1" />
                       <span>{scoreData.profileData.followers} followers</span>

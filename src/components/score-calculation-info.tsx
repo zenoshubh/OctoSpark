@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronUp, Calculator, GitBranch, Star, Users, Activity } from "lucide-react"
 
-export default function ScoreCalculationInfo() {
+export function ScoreCalculationInfo() {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (

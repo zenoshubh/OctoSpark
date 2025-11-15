@@ -23,7 +23,7 @@ function FeatureCard({
   );
 }
 
-const FeatureSection = () => {
+export function FeatureSection() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full mx-auto">
       <FeatureCard
@@ -43,6 +43,4 @@ const FeatureSection = () => {
       />
     </div>
   );
-};
-
-export default FeatureSection;
+}

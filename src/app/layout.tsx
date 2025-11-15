@@ -1,9 +1,9 @@
-import { type Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
-import Footer from '@/components/Footer'
-import SessionProvider from '@/components/SessionProvider'
-import { getAuthSession } from '@/lib/auth'
+import { type Metadata, type Viewport } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import '@/styles/globals.css';
+import { Footer } from '@/components/footer';
+import { Providers } from '@/providers';
+import { getAuthSession } from '@/config/auth';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -16,9 +16,43 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'OctoSpark',
+  metadataBase: new URL('https://octospark.vercel.app'),
+  title: {
+    default: 'OctoSpark',
+    template: '%s | OctoSpark',
+  },
   description: "Analyze any GitHub developer's profile with OctoSpark — a developer metrics platform that evaluates contributions, repositories, activity, and impact using the GitHub GraphQL API. Ideal for recruiters, developers, and tech teams.",
-}
+  keywords: ['GitHub', 'developer analytics', 'code metrics', 'developer score', 'GitHub profile analysis'],
+  authors: [{ name: 'Shubh Verma' }],
+  creator: 'Shubh Verma',
+  publisher: 'Shubh Verma',
+  applicationName: 'OctoSpark',
+  referrer: 'origin-when-cross-origin',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#8b5cf6',
+  colorScheme: 'dark',
+};
 
 export default async function RootLayout({
   children,
@@ -30,7 +64,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-gray-950 via-gray-900 to-black min-h-screen`}>
-        <SessionProvider session={session}>
+        <Providers session={session}>
           {/* Animated background elements */}
           <div className="fixed inset-0 overflow-hidden pointer-events-none">
             <div className="absolute -top-4 -right-4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -43,7 +77,7 @@ export default async function RootLayout({
           </main>
           
           <Footer />
-        </SessionProvider>
+        </Providers>
       </body>
     </html>
   )
